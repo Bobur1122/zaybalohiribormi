@@ -393,22 +393,20 @@ class TechnicalAgent:
             step = max(round(0.03 * atr, 2), 0.25 if not is_btc else 10.0)
             entry_price = round(anchor_price + step, 2)
 
-            # Intraday Sniper SL: Oxirgi 6 shamcha cho'qqisi ustida, lekin 20-30 pt emas!
-            # XAUUSD uchun: min 9.5 pt ($9.50), max 14.0 pt ($14.00)
-            # BTCUSD uchun: min $280, max $480
-            min_sl_pts = 9.50 if not is_btc else 280.0
-            max_sl_pts = 14.00 if not is_btc else 480.0
+            # Intraday Sniper SL: Oxirgi 6 shamcha cho'qqisi ustida, lekin maksimal 16.5 pt (22-30 pt emas!)
+            min_sl_pts = 11.50 if not is_btc else 380.0
+            max_sl_pts = 16.00 if not is_btc else 600.0
 
-            raw_sl = round(float(pa["rec6_high"]) + 0.12 * atr, 2)
+            raw_sl = round(float(pa["rec6_high"]) + 0.16 * atr, 2)
             sl_dist_clamped = max(min_sl_pts, min(max_sl_pts, round(raw_sl - entry_price, 2)))
             sl_price = round(entry_price + sl_dist_clamped, 2)
 
             risk_dist = abs(sl_price - entry_price)
             # Intraday Sessiya TP lari (London ichida TP1 va TP2 ni oladi!):
-            # TP1 = 1.20R (~11-16 pt), TP2 = 1.90R (~18-26 pt), TP3 = 2.70R (~25-37 pt)
-            tp1_price = round(entry_price - 1.20 * risk_dist, 2)
-            tp2_price = round(entry_price - 1.90 * risk_dist, 2)
-            tp3_price = round(entry_price - 2.70 * risk_dist, 2)
+            # TP1 = 0.95R (~11-15 pt — tezda olinib Bezubitokka o'tkazadi!), TP2 = 1.65R (~19-26 pt), TP3 = 2.40R (~27-38 pt)
+            tp1_price = round(entry_price - 0.95 * risk_dist, 2)
+            tp2_price = round(entry_price - 1.65 * risk_dist, 2)
+            tp3_price = round(entry_price - 2.40 * risk_dist, 2)
 
             poi_str = (
                 f"M15 Bearish FVG ({fvg_data['bearish_fvg'][0]:.2f}–{fvg_data['bearish_fvg'][1]:.2f})"
@@ -425,17 +423,17 @@ class TechnicalAgent:
             step = max(round(0.03 * atr, 2), 0.25 if not is_btc else 10.0)
             entry_price = round(anchor_price - step, 2)
 
-            min_sl_pts = 9.50 if not is_btc else 280.0
-            max_sl_pts = 14.00 if not is_btc else 480.0
+            min_sl_pts = 11.50 if not is_btc else 380.0
+            max_sl_pts = 16.00 if not is_btc else 600.0
 
-            raw_sl = round(float(pa["rec6_low"]) - 0.12 * atr, 2)
+            raw_sl = round(float(pa["rec6_low"]) - 0.16 * atr, 2)
             sl_dist_clamped = max(min_sl_pts, min(max_sl_pts, round(entry_price - raw_sl, 2)))
             sl_price = round(entry_price - sl_dist_clamped, 2)
 
             risk_dist = abs(entry_price - sl_price)
-            tp1_price = round(entry_price + 1.20 * risk_dist, 2)
-            tp2_price = round(entry_price + 1.90 * risk_dist, 2)
-            tp3_price = round(entry_price + 2.70 * risk_dist, 2)
+            tp1_price = round(entry_price + 0.95 * risk_dist, 2)
+            tp2_price = round(entry_price + 1.65 * risk_dist, 2)
+            tp3_price = round(entry_price + 2.40 * risk_dist, 2)
 
             poi_str = (
                 f"M15 Bullish FVG ({fvg_data['bullish_fvg'][0]:.2f}–{fvg_data['bullish_fvg'][1]:.2f})"
