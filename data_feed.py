@@ -14,6 +14,7 @@ PRO v6.0 HAQIQIY BOZOR YANGILANISHLARI:
 from datetime import datetime, timedelta, timezone
 import json
 import logging
+import os
 from typing import Any, Optional
 import urllib.parse
 import urllib.request
@@ -466,7 +467,10 @@ class MarketDataCollector:
     def get_ohlcv_with_status(
         self, symbol: str, timeframe_str: str, bars: int = 200
     ) -> tuple[pd.DataFrame, bool]:
-        live_quote = self.fetch_tradingview_live_quote(symbol)
+        if not os.getenv("BACKTEST_DISABLE_BASIS_SHIFT"):
+            live_quote = self.fetch_tradingview_live_quote(symbol)
+        else:
+            live_quote = None
         if self.mt5_connected:
             try:
                 return self._fetch_mt5_ohlcv(symbol, timeframe_str, bars), True

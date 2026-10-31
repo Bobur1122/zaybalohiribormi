@@ -254,6 +254,10 @@ class TechnicalAgent:
             "rec6_low": rec6_low,
             "rec3_high": rec3_high,
             "rec3_low": rec3_low,
+            "c0_open": round(c0_open, 2),
+            "c0_high": round(c0_high, 2),
+            "c0_low": round(c0_low, 2),
+            "c0_close": round(c0_close, 2),
             "last_sh": last_sh,
             "last_sl": last_sl,
         }
@@ -386,32 +390,50 @@ class TechnicalAgent:
         candle_confirmed = bool(pa["bear_candle_trigger"] if direction == "SELL" else pa["bull_candle_trigger"])
 
         # =====================================================================
-        # KIRISH, STOP-LOSS VA TAKE-PROFIT (PRO v6.3 INTRADAY SNIPER: XAU SL 9-14 pt, BTC SL $280-$480)
+        # KIRISH, STOP-LOSS VA TAKE-PROFIT (PRO v6.6 OPTIMAL ENTRY: XAU 25% RETRACE, BTC STRUCTURAL)
         # =====================================================================
+        c0_open = float(pa["c0_open"])
+        c0_high = float(pa["c0_high"])
+        c0_low = float(pa["c0_low"])
+        c0_close = float(pa["c0_close"])
+
         if direction == "SELL":
             order_type = "SELL_LIMIT"
-            step = max(round(0.03 * atr, 2), 0.25 if not is_btc else 10.0)
-            entry_price = round(anchor_price + step, 2)
+            if not is_btc:
+                # XAUUSD uchun: SELL shamcha yopilgach, 25% shamcha tanasiga (+0.80 .. +2.50 pt tepaga)
+                # qaytishda SELL_LIMIT oladi (70% Win Rate!)
+                retrace_sell = round(c0_close + 0.25 * max(c0_open - c0_close, 0.0), 2)
+                entry_price = round(max(anchor_price + 0.80, min(retrace_sell, anchor_price + 2.50)), 2)
 
-            # Intraday Sniper SL: Oxirgi 6 shamcha cho'qqisi ustida, lekin maksimal 16.5 pt (22-30 pt emas!)
-            min_sl_pts = 11.50 if not is_btc else 380.0
-            max_sl_pts = 16.00 if not is_btc else 600.0
+                # Intraday Sniper SL: XAUUSD 11.0 - 15.0 pt (22-30 pt emas!)
+                min_sl_pts, max_sl_pts = 11.00, 15.00
+                raw_sl = round(float(pa["rec6_high"]) + 0.14 * atr, 2)
+                sl_dist_clamped = max(min_sl_pts, min(max_sl_pts, round(raw_sl - entry_price, 2)))
+                sl_price = round(entry_price + sl_dist_clamped, 2)
 
-            raw_sl = round(float(pa["rec6_high"]) + 0.16 * atr, 2)
-            sl_dist_clamped = max(min_sl_pts, min(max_sl_pts, round(raw_sl - entry_price, 2)))
-            sl_price = round(entry_price + sl_dist_clamped, 2)
+                risk_dist = abs(sl_price - entry_price)
+                tp1_price = round(entry_price - 1.00 * risk_dist, 2)
+                tp2_price = round(entry_price - 1.75 * risk_dist, 2)
+                tp3_price = round(entry_price - 2.50 * risk_dist, 2)
+            else:
+                # BTCUSD uchun: Momentum kuchli bo'lgani uchun +10$ mikro-retest va strukturali SL
+                step = max(round(0.03 * atr, 2), 10.0)
+                entry_price = round(anchor_price + step, 2)
 
-            risk_dist = abs(sl_price - entry_price)
-            # Intraday Sessiya TP lari (London ichida TP1 va TP2 ni oladi!):
-            # TP1 = 0.95R (~11-15 pt — tezda olinib Bezubitokka o'tkazadi!), TP2 = 1.65R (~19-26 pt), TP3 = 2.40R (~27-38 pt)
-            tp1_price = round(entry_price - 0.95 * risk_dist, 2)
-            tp2_price = round(entry_price - 1.65 * risk_dist, 2)
-            tp3_price = round(entry_price - 2.40 * risk_dist, 2)
+                raw_sl = round(float(pa["rec6_high"]) + 0.20 * atr, 2)
+                sl_price = round(max(raw_sl, entry_price + 1.25 * atr), 2)
+                if sl_price - entry_price > 1.85 * atr:
+                    sl_price = round(entry_price + 1.65 * atr, 2)
+
+                risk_dist = abs(sl_price - entry_price)
+                tp1_price = round(entry_price - 1.20 * risk_dist, 2)
+                tp2_price = round(entry_price - 2.00 * risk_dist, 2)
+                tp3_price = round(entry_price - 3.00 * risk_dist, 2)
 
             poi_str = (
                 f"M15 Bearish FVG ({fvg_data['bearish_fvg'][0]:.2f}–{fvg_data['bearish_fvg'][1]:.2f})"
                 if fvg_data["bearish_fvg"]
-                else f"M15 Supply / EMA20 Value Zone ({ltf_ind['ema20']:.2f})"
+                else f"M15 Supply / EMA20 Retracement ({entry_price:.2f})"
             )
             ob_wall_str = (
                 f"Whale Ask Wall: {snapshot.whale_ask_wall:.2f} ({snapshot.whale_ask_vol:.0f} lot) | "
@@ -420,25 +442,39 @@ class TechnicalAgent:
 
         else:  # BUY
             order_type = "BUY_LIMIT"
-            step = max(round(0.03 * atr, 2), 0.25 if not is_btc else 10.0)
-            entry_price = round(anchor_price - step, 2)
+            if not is_btc:
+                # XAUUSD uchun: BUY shamcha yopilgach, 25% shamcha tanasiga (-0.80 .. -2.50 pt pastga)
+                # qaytishda BUY_LIMIT oladi (70% Win Rate!)
+                retrace_buy = round(c0_close - 0.25 * max(c0_close - c0_open, 0.0), 2)
+                entry_price = round(min(anchor_price - 0.80, max(retrace_buy, anchor_price - 2.50)), 2)
 
-            min_sl_pts = 11.50 if not is_btc else 380.0
-            max_sl_pts = 16.00 if not is_btc else 600.0
+                min_sl_pts, max_sl_pts = 11.00, 15.00
+                raw_sl = round(float(pa["rec6_low"]) - 0.14 * atr, 2)
+                sl_dist_clamped = max(min_sl_pts, min(max_sl_pts, round(entry_price - raw_sl, 2)))
+                sl_price = round(entry_price - sl_dist_clamped, 2)
 
-            raw_sl = round(float(pa["rec6_low"]) - 0.16 * atr, 2)
-            sl_dist_clamped = max(min_sl_pts, min(max_sl_pts, round(entry_price - raw_sl, 2)))
-            sl_price = round(entry_price - sl_dist_clamped, 2)
+                risk_dist = abs(entry_price - sl_price)
+                tp1_price = round(entry_price + 1.00 * risk_dist, 2)
+                tp2_price = round(entry_price + 1.75 * risk_dist, 2)
+                tp3_price = round(entry_price + 2.50 * risk_dist, 2)
+            else:
+                step = max(round(0.03 * atr, 2), 10.0)
+                entry_price = round(anchor_price - step, 2)
 
-            risk_dist = abs(entry_price - sl_price)
-            tp1_price = round(entry_price + 0.95 * risk_dist, 2)
-            tp2_price = round(entry_price + 1.65 * risk_dist, 2)
-            tp3_price = round(entry_price + 2.40 * risk_dist, 2)
+                raw_sl = round(float(pa["rec6_low"]) - 0.20 * atr, 2)
+                sl_price = round(min(raw_sl, entry_price - 1.25 * atr), 2)
+                if entry_price - sl_price > 1.85 * atr:
+                    sl_price = round(entry_price - 1.65 * atr, 2)
+
+                risk_dist = abs(entry_price - sl_price)
+                tp1_price = round(entry_price + 1.20 * risk_dist, 2)
+                tp2_price = round(entry_price + 2.00 * risk_dist, 2)
+                tp3_price = round(entry_price + 3.00 * risk_dist, 2)
 
             poi_str = (
                 f"M15 Bullish FVG ({fvg_data['bullish_fvg'][0]:.2f}–{fvg_data['bullish_fvg'][1]:.2f})"
                 if fvg_data["bullish_fvg"]
-                else f"M15 Demand / EMA20 Value Zone ({ltf_ind['ema20']:.2f})"
+                else f"M15 Demand / EMA20 Retracement ({entry_price:.2f})"
             )
             ob_wall_str = (
                 f"Whale Bid Wall: {snapshot.whale_bid_wall:.2f} ({snapshot.whale_bid_vol:.0f} lot) | "

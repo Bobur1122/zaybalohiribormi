@@ -84,6 +84,8 @@ def fetch_historical_data_for_backtest(
             "volume": q["volume"],
         }).dropna().reset_index(drop=True)
 
+        # TradingView FOREXCOM:XAUUSD (Spot) va GC=F (COMEX Fyuchers) o'rtasidagi ~23.70 pt farqni
+        # sinxronlaymiz — shunda backtest narxlari 100% TradingView FOREXCOM:XAUUSD bilan bir xil chiqadi!
         if "XAU" in symbol.upper() and live_q and live_q.get("close"):
             tv_c = float(live_q["close"])
             yf_c = float(df["close"].iloc[-1])
@@ -323,6 +325,7 @@ def run_symbol_backtest(
                 "direction": tech_setup.direction,
                 "order_type": tech_setup.order_type,
                 "score": tech_setup.confluence_score,
+                "signal_price": bar_close,
                 "entry": tech_setup.entry_price,
                 "initial_sl": tech_setup.sl_price,
                 "sl": tech_setup.sl_price,
@@ -400,7 +403,8 @@ def main() -> None:
                 badge = "✅" if "WIN" in tr["status"] else "❌"
                 print(
                     f"     {idx}. {badge} [{tr['opened_at']} UZT] {tr['direction']} ({tr['score']}/100) | "
-                    f"Entry: {tr['entry']:.2f} | SL: {tr['initial_sl']:.2f} | TP1: {tr['tp1']:.2f} | TP2: {tr['tp2']:.2f} "
+                    f"Joriy: {tr.get('signal_price', tr['entry']):.2f} -> Entry: {tr['entry']:.2f} | "
+                    f"SL: {tr['initial_sl']:.2f} | TP1: {tr['tp1']:.2f} | TP2: {tr['tp2']:.2f} "
                     f"-> {tr['status']} (${tr['pnl_usd']:+.2f})"
                 )
 
