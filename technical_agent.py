@@ -431,9 +431,9 @@ class TechnicalAgent:
                 sl_price = round(entry_price + sl_dist_clamped, 2)
 
                 risk_dist = abs(sl_price - entry_price)
-                tp1_price = round(entry_price - 0.95 * risk_dist, 2)
-                tp2_price = round(entry_price - 1.65 * risk_dist, 2)
-                tp3_price = round(entry_price - 2.40 * risk_dist, 2)
+                tp1_price = round(entry_price - 0.75 * risk_dist, 2)
+                tp2_price = round(entry_price - 1.05 * risk_dist, 2)
+                tp3_price = round(entry_price - 1.30 * risk_dist, 2)
             else:
                 # BTCUSD uchun: +10$ mikro-retest va M15 Intraday Sniper SL ($220 - $420)
                 step = max(round(0.04 * atr, 2), 10.0)
@@ -446,9 +446,9 @@ class TechnicalAgent:
                 sl_price = round(entry_price + sl_dist_clamped, 2)
 
                 risk_dist = abs(sl_price - entry_price)
-                tp1_price = round(entry_price - 1.20 * risk_dist, 2)
-                tp2_price = round(entry_price - 2.00 * risk_dist, 2)
-                tp3_price = round(entry_price - 2.80 * risk_dist, 2)
+                tp1_price = round(entry_price - 0.85 * risk_dist, 2)
+                tp2_price = round(entry_price - 1.25 * risk_dist, 2)
+                tp3_price = round(entry_price - 1.60 * risk_dist, 2)
 
             poi_str = (
                 f"M15 Bearish FVG ({fvg_data['bearish_fvg'][0]:.2f}–{fvg_data['bearish_fvg'][1]:.2f})"
@@ -474,9 +474,9 @@ class TechnicalAgent:
                 sl_price = round(entry_price - sl_dist_clamped, 2)
 
                 risk_dist = abs(entry_price - sl_price)
-                tp1_price = round(entry_price + 0.95 * risk_dist, 2)
-                tp2_price = round(entry_price + 1.65 * risk_dist, 2)
-                tp3_price = round(entry_price + 2.40 * risk_dist, 2)
+                tp1_price = round(entry_price + 0.75 * risk_dist, 2)
+                tp2_price = round(entry_price + 1.05 * risk_dist, 2)
+                tp3_price = round(entry_price + 1.30 * risk_dist, 2)
             else:
                 step = max(round(0.04 * atr, 2), 10.0)
                 entry_price = round(anchor_price - step, 2)
@@ -488,9 +488,9 @@ class TechnicalAgent:
                 sl_price = round(entry_price - sl_dist_clamped, 2)
 
                 risk_dist = abs(entry_price - sl_price)
-                tp1_price = round(entry_price + 1.20 * risk_dist, 2)
-                tp2_price = round(entry_price + 2.00 * risk_dist, 2)
-                tp3_price = round(entry_price + 2.80 * risk_dist, 2)
+                tp1_price = round(entry_price + 0.85 * risk_dist, 2)
+                tp2_price = round(entry_price + 1.25 * risk_dist, 2)
+                tp3_price = round(entry_price + 1.60 * risk_dist, 2)
 
             poi_str = (
                 f"M15 Bullish FVG ({fvg_data['bullish_fvg'][0]:.2f}–{fvg_data['bullish_fvg'][1]:.2f})"
@@ -600,9 +600,9 @@ class TechnicalAgent:
         )
 
         trailing_text = (
-            f"1) Narx TP1 ({tp1_price:.2f}) ga yetganda pozitsiyaning 50% qismi yopiladi va SL darhol "
-            f"Entry ({entry_price:.2f}) ga (Breakeven / Bezubitok) ko'chiriladi. "
-            f"2) TP2 ({tp2_price:.2f}) da yana 30% yopiladi. Qolgan 20% qismi TP3 ({tp3_price:.2f}) gacha ushlanadi."
+            f"1) Narx TP1 ({tp1_price:.2f}) ga yetganda pozitsiyaning 40% qismi yopiladi va SL "
+            f"Entry ({entry_price:.2f}) yaqiniga (0.18R Smart Breakeven buferi bilan) tortiladi. "
+            f"2) TP2 ({tp2_price:.2f}) da yana 40% yopilib, SL aniq Entry ga ko'chiriladi. Qolgan 20% Runner TP3 ({tp3_price:.2f}) gacha ushlanadi."
         )
 
         return TechnicalSetup(

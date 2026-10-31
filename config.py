@@ -38,15 +38,15 @@ M5_TF = "M5"    # Mikro taymfreym: CHoCH va Volume Spike tasdig'i
 # Risk Boshqaruvi sozlamalari (PRO v6.0 Institutional Standard)
 ACCOUNT_BALANCE = float(os.getenv("ACCOUNT_BALANCE", "10000.0"))
 RISK_PER_TRADE_PCT = float(os.getenv("RISK_PER_TRADE_PCT", "1.0"))  # Har bir savdoda depozitning 1% ($100) qismi
-MIN_RR_RATIO = 1.60               # Asosiy TP2 uchun minimal Risk:Reward nisbati (1:1.60+)
-MIN_TP1_RR_RATIO = 0.90           # TP1 (50% fiksatsiya va B/U) uchun minimal R:R nisbati (1:0.90+)
+MIN_RR_RATIO = 1.00               # Asosiy TP2 uchun minimal Risk:Reward nisbati (1:1.00+, TP3=1.30R+)
+MIN_TP1_RR_RATIO = 0.70           # TP1 (fiksatsiya va Smart B/U) uchun minimal R:R nisbati (1:0.70+)
 MAX_SL_ATR_MULTIPLIER = 2.8       # SL masofasi ATR ning 2.8 barobaridan oshmasligi shart
 MIN_SL_ATR_MULTIPLIER = 0.85      # SL masofasi ATR ning 0.85 barobaridan kam bo'lmasligi shart
 CONFLUENCE_THRESHOLD = 85         # Savdoga ruxsat berish uchun minimal Confluence balli (85/100)
 
-# PRO v6.7 Kunlik Limit va Cooldown (Sifat va Faollik muvozanati — 1 London + 1 NY savdo)
+# PRO v6.8 Kunlik Limit va Cooldown (Sifat va Faollik muvozanati — 1 London + 1 NY savdo)
 MAX_DAILY_TRADES_PER_SYMBOL = 2   # Har bir aktiv bo'yicha kuniga maksimal 2 ta haqiqiy A+ savdo
-POST_TRADE_COOLDOWN_MINUTES = 180 # Savdo yopilgach (SL/TP), keyingi savdogacha 3 soat (keyingi sessiyagacha) kutish
+POST_TRADE_COOLDOWN_MINUTES = 120 # Savdo yopilgach (SL/TP), keyingi savdogacha 2 soat kutish
 PENDING_EXPIRY_MINUTES = 120      # Limit order 120 daqiqa (8 ta M15 shamcha) ichida ishga tushmasa yangilanadi
 
 # AI (LLM) sozlamalari (Fundamental tahlil uchun)

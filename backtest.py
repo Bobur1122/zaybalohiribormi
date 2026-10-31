@@ -206,10 +206,12 @@ def run_symbol_backtest(
                 max_stage = active_trade["max_tp_stage"]
                 if max_stage == 2:
                     active_trade["status"] = "TP2_WIN"
-                    active_trade["pnl_usd"] = round(risk_usd * (0.50 * rr1 + 0.30 * rr2 + 0.20 * rr1), 2)
+                    # TP1 da 40% (+rr1), TP2 da 40% (+rr2), qolgan 20% Entry (0.0R Bezubitok) da yopiladi
+                    active_trade["pnl_usd"] = round(risk_usd * (0.40 * rr1 + 0.40 * rr2), 2)
                 elif max_stage == 1:
                     active_trade["status"] = "TP1_BU_WIN"
-                    active_trade["pnl_usd"] = round(risk_usd * (0.50 * rr1), 2)
+                    # TP1 da 40% (+rr1) fiksatsiya qilingan, qolgan 60% Smart Buffer (-0.18R) da yopilsa ham sof foyda!
+                    active_trade["pnl_usd"] = round(risk_usd * (0.40 * rr1 - 0.60 * 0.18), 2)
                 else:
                     active_trade["status"] = "SL_LOSS"
                     active_trade["pnl_usd"] = round(-risk_usd, 2)
@@ -219,31 +221,36 @@ def run_symbol_backtest(
                 active_trade = None
                 continue
 
-            # TP1 -> TP2 -> TP3 tekshiruvi
+            # TP1 -> TP2 -> TP3 tekshiruvi (Smart Institutional Trailing — Entry retestida chiqarib yubormaydi!)
             if st == "TRIGGERED":
                 hit_tp1 = (direction == "BUY" and bar_high >= tp1) or (direction == "SELL" and bar_low <= tp1)
                 if hit_tp1:
                     active_trade["status"] = "TP1_HIT"
                     active_trade["max_tp_stage"] = 1
-                    active_trade["sl"] = entry  # Breakeven!
+                    # Smart Breakeven Buffer: TP1 da 40% foyda olinadi, SL esa Entry dan 0.18R (~2 pt) orqaga
+                    # tortiladi — shunda Entry ga 1-2 pt retest savdoni buzmaydi va TP2/TP3 ga yetib boradi!
+                    smart_bu = round(entry - 0.18 * risk_pts, 2) if direction == "BUY" else round(entry + 0.18 * risk_pts, 2)
+                    active_trade["sl"] = smart_bu
                     st = "TP1_HIT"
-                    sl = entry
+                    sl = smart_bu
 
             if st == "TP1_HIT":
                 hit_tp2 = (direction == "BUY" and bar_high >= tp2) or (direction == "SELL" and bar_low <= tp2)
                 if hit_tp2:
                     active_trade["status"] = "TP2_HIT"
                     active_trade["max_tp_stage"] = 2
-                    active_trade["sl"] = tp1  # Trailing SL -> TP1!
+                    # TP2 olinganda (80% foyda naqd!) SL aniq Entry (0.0R Bezubitok) ga ko'chiriladi,
+                    # shunda TP1 retestida chiqib ketmasdan qolgan 20% Runner TP3 gacha yetib boradi!
+                    active_trade["sl"] = entry
                     st = "TP2_HIT"
-                    sl = tp1
+                    sl = entry
 
             if st == "TP2_HIT":
                 hit_tp3 = (direction == "BUY" and bar_high >= tp3) or (direction == "SELL" and bar_low <= tp3)
                 if hit_tp3:
                     active_trade["status"] = "TP3_FULL_WIN"
                     active_trade["max_tp_stage"] = 3
-                    active_trade["pnl_usd"] = round(risk_usd * (0.50 * rr1 + 0.30 * rr2 + 0.20 * rr3), 2)
+                    active_trade["pnl_usd"] = round(risk_usd * (0.40 * rr1 + 0.40 * rr2 + 0.20 * rr3), 2)
                     active_trade["closed_at"] = bar_dt_uz.strftime("%Y-%m-%d %H:%M")
                     trades_log.append(active_trade)
                     last_closed_dt = bar_dt
@@ -404,7 +411,7 @@ def main() -> None:
                 print(
                     f"     {idx}. {badge} [{tr['opened_at']} UZT] {tr['direction']} ({tr['score']}/100) | "
                     f"Joriy: {tr.get('signal_price', tr['entry']):.2f} -> Entry: {tr['entry']:.2f} | "
-                    f"SL: {tr['initial_sl']:.2f} | TP1: {tr['tp1']:.2f} | TP2: {tr['tp2']:.2f} "
+                    f"SL: {tr['initial_sl']:.2f} | TP1: {tr['tp1']:.2f} | TP2: {tr['tp2']:.2f} | TP3: {tr['tp3']:.2f} "
                     f"-> {tr['status']} (${tr['pnl_usd']:+.2f})"
                 )
 
