@@ -190,16 +190,14 @@ class TechnicalAgent:
         recent3_high = max(c0_high, c1_high, float(c2["high"]))
 
         touched_bull_value = (
-            recent3_low <= max(ltf_ind["ema20"], vwap_price) + 0.12 * atr
-            and (c0_close - ltf_ind["ema20"]) <= 0.45 * atr
-            and c0_close >= ltf_ind["ema50"] - 0.08 * atr
-            and abs(c0_body) <= 0.65 * atr
+            recent3_low <= max(ltf_ind["ema20"], vwap_price) + 0.15 * atr
+            and (c0_close - ltf_ind["ema20"]) <= 0.55 * atr
+            and c0_close >= ltf_ind["ema50"] - 0.10 * atr
         )
         touched_bear_value = (
-            recent3_high >= min(ltf_ind["ema20"], vwap_price) - 0.12 * atr
-            and (ltf_ind["ema20"] - c0_close) <= 0.45 * atr
-            and c0_close <= ltf_ind["ema50"] + 0.08 * atr
-            and abs(c0_body) <= 0.65 * atr
+            recent3_high >= min(ltf_ind["ema20"], vwap_price) - 0.15 * atr
+            and (ltf_ind["ema20"] - c0_close) <= 0.55 * atr
+            and c0_close <= ltf_ind["ema50"] + 0.10 * atr
         )
 
         # 5. Haqiqiy Liquidity Sweep (Stop-Hunt):
