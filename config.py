@@ -44,9 +44,9 @@ MAX_SL_ATR_MULTIPLIER = 2.8       # SL masofasi ATR ning 2.8 barobaridan oshmasl
 MIN_SL_ATR_MULTIPLIER = 0.85      # SL masofasi ATR ning 0.85 barobaridan kam bo'lmasligi shart
 CONFLUENCE_THRESHOLD = 85         # Savdoga ruxsat berish uchun minimal Confluence balli (85/100)
 
-# PRO v6.6 Kunlik Limit va Cooldown (Sifat va Faollik muvozanati)
-MAX_DAILY_TRADES_PER_SYMBOL = 3   # Har bir aktiv bo'yicha kuniga maksimal 3 ta haqiqiy A+ savdo
-POST_TRADE_COOLDOWN_MINUTES = 45  # Savdo yopilgach (SL/TP), keyingi savdogacha 45 daqiqa kutish
+# PRO v6.7 Kunlik Limit va Cooldown (Sifat va Faollik muvozanati — 1 London + 1 NY savdo)
+MAX_DAILY_TRADES_PER_SYMBOL = 2   # Har bir aktiv bo'yicha kuniga maksimal 2 ta haqiqiy A+ savdo
+POST_TRADE_COOLDOWN_MINUTES = 180 # Savdo yopilgach (SL/TP), keyingi savdogacha 3 soat (keyingi sessiyagacha) kutish
 PENDING_EXPIRY_MINUTES = 120      # Limit order 120 daqiqa (8 ta M15 shamcha) ichida ishga tushmasa yangilanadi
 
 # AI (LLM) sozlamalari (Fundamental tahlil uchun)
