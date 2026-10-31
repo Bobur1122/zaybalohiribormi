@@ -436,7 +436,28 @@ class MultiAgentTradingOrchestrator:
             time.sleep(interval_seconds)
 
 
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
+
+class HealthCheckHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-type", "text/plain")
+        self.end_headers()
+        self.wfile.write(b"OK")
+
+def start_health_server():
+    port = int(os.environ.get("PORT", 8080))
+    server = HTTPServer(("0.0.0.0", port), HealthCheckHandler)
+    logger.info(f"Starting health check server on port {port}")
+    server.serve_forever()
+
 def main() -> None:
+    # Start health server for Render
+    if os.environ.get("RENDER") or os.environ.get("PORT"):
+        t = threading.Thread(target=start_health_server, daemon=True)
+        t.start()
+
     parser = argparse.ArgumentParser(description="PRO v5.1 Institutional Diamond Sniper")
     parser.add_argument("--loop", action="store_true", help="24/7 uzluksiz monitoring rejimi")
     parser.add_argument("--interval", type=int, default=180, help="Sikllar orasidagi vaqt (sekund, default=180)")
