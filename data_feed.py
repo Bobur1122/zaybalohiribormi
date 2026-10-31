@@ -557,6 +557,7 @@ class MarketDataCollector:
 
         dxy_trend = self.determine_dxy_trend()
         us10y_trend = self.determine_us10y_trend()
+        # PRO v6.3: Strukturaviy ATR H1 dan olinadi, SL/TP esa Intraday chegarada (8-12 pt) ushlanadi
         atr_val = self.calculate_atr(htf_df, period=14)
         current_price = float(ltf_df["close"].iloc[-1])
         tv_ticker = TV_TICKERS.get(symbol, symbol)
